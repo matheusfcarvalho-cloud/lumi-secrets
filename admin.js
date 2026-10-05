@@ -83,6 +83,7 @@ async function loadDashboard() {
     accessCard.hidden = true;
     ordersSection.hidden = false;
   } catch (error) {
+    sessionStorage.removeItem(ADMIN_TAB_KEY);
     ordersMessage.textContent = '';
     ordersSection.hidden = true;
     accessCard.hidden = false;
