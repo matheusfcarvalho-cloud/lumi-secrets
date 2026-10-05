@@ -114,6 +114,16 @@ class DatabaseBootstrapTests(unittest.TestCase):
             "2026-01-02T00:00:00+00:00",
         )
 
+    def test_libsql_cursor_adapter_preserves_sqlite_cursor_iteration(self):
+        class Cursor:
+            description = (("id",), ("name",))
+
+            def fetchall(self):
+                return [(1, "pedido")]
+
+        adapter = server.LibsqlCursorAdapter(Cursor())
+        self.assertEqual([(row["id"], row["name"]) for row in adapter], [(1, "pedido")])
+
 
 if __name__ == "__main__":
     unittest.main()

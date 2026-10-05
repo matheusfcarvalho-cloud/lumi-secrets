@@ -68,6 +68,11 @@ class LibsqlCursorAdapter:
     def __getattr__(self, name):
         return getattr(self.cursor, name)
 
+    def __iter__(self):
+        # sqlite3 cursors are iterable; the libsql cursor wrapped here is not.
+        # Preserve that behavior for existing query loops throughout the app.
+        return iter(self.fetchall())
+
     def _adapt(self, values):
         if values is None:
             return None
