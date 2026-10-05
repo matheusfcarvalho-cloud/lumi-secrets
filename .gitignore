@@ -1,5 +1,9 @@
 .lumi-private/
 .vercel/
+.turso-cli/
+.go-sdk/
+.go-work/
+.turso-test-venv/
 .env*
 !.env.example
 __pycache__/

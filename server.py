@@ -12,6 +12,8 @@ import re
 import secrets
 import sqlite3
 import sys
+import threading
+from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
 from http.cookies import SimpleCookie
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -31,10 +33,72 @@ PRODUCTS = {
     7: ("Conjunto Sol", "Conjuntos", 27990), 8: ("Robe Lua", "Sleepwear", 24990),
 }
 ADDRESS_FIELDS = ("cep", "street", "number", "complement", "neighborhood", "city", "state")
+_DB_INITIALIZED = False
+_DB_INIT_LOCK = threading.Lock()
 
 
 def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+class LibsqlRow(Mapping):
+    """Expose libsql tuple rows with sqlite3.Row-style name/index access."""
+
+    def __init__(self, columns, values):
+        self._columns = tuple(columns)
+        self._values = tuple(values)
+        self._column_indexes = {name: index for index, name in enumerate(self._columns)}
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            key = self._column_indexes[key]
+        return self._values[key]
+
+    def __iter__(self):
+        return iter(self._columns)
+
+    def __len__(self):
+        return len(self._values)
+
+
+class LibsqlCursorAdapter:
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def __getattr__(self, name):
+        return getattr(self.cursor, name)
+
+    def _adapt(self, values):
+        if values is None:
+            return None
+        return LibsqlRow((column[0] for column in self.cursor.description), values)
+
+    def fetchone(self):
+        return self._adapt(self.cursor.fetchone())
+
+    def fetchall(self):
+        return [self._adapt(values) for values in self.cursor.fetchall()]
+
+    def fetchmany(self, size=None):
+        values = self.cursor.fetchmany() if size is None else self.cursor.fetchmany(size)
+        return [self._adapt(row) for row in values]
+
+
+class LibsqlConnectionAdapter:
+    def __init__(self, connection):
+        self.connection = connection
+
+    def execute(self, *args, **kwargs):
+        return LibsqlCursorAdapter(self.connection.execute(*args, **kwargs))
+
+    def executemany(self, *args, **kwargs):
+        return LibsqlCursorAdapter(self.connection.executemany(*args, **kwargs))
+
+    def executescript(self, *args, **kwargs):
+        return LibsqlCursorAdapter(self.connection.executescript(*args, **kwargs))
+
+    def __getattr__(self, name):
+        return getattr(self.connection, name)
 
 
 class RemoteConnectionContext:
@@ -52,9 +116,11 @@ class RemoteConnectionContext:
         return False
 
 
-def connect() -> sqlite3.Connection:
+def connect() -> RemoteConnectionContext:
     database_url = os.environ.get("TURSO_DATABASE_URL", "").strip()
     auth_token = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
+    if os.environ.get("VERCEL") == "1" and not database_url:
+        raise RuntimeError("Configure TURSO_DATABASE_URL e TURSO_AUTH_TOKEN no projeto Vercel; SQLite local não é persistente na Vercel.")
     if database_url:
         if not auth_token:
             raise RuntimeError("TURSO_AUTH_TOKEN precisa estar configurado junto com TURSO_DATABASE_URL.")
@@ -63,16 +129,43 @@ def connect() -> sqlite3.Connection:
         except ImportError as exc:
             raise RuntimeError("Instale o pacote libsql para usar o banco remoto Turso.") from exc
         db = libsql.connect(database=database_url, auth_token=auth_token)
-        db.row_factory = sqlite3.Row
-        return RemoteConnectionContext(db)
+        return RemoteConnectionContext(LibsqlConnectionAdapter(db))
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(DB_PATH)
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA foreign_keys = ON")
-    return db
+    return RemoteConnectionContext(db)
 
 
 def init_db() -> None:
+    """Initialize locally; Vercel functions require a separately migrated DB."""
+    global _DB_INITIALIZED
+    if os.environ.get("VERCEL") == "1":
+        if os.environ.get("LUMI_DB_SCHEMA_READY") != "1":
+            raise RuntimeError("Execute `python scripts/migrate_db.py` no banco Turso e defina LUMI_DB_SCHEMA_READY=1 na Vercel antes do deploy.")
+        return
+    if _DB_INITIALIZED:
+        return
+    with _DB_INIT_LOCK:
+        if _DB_INITIALIZED:
+            return
+        _initialize_db()
+        _DB_INITIALIZED = True
+
+
+def migrate_db() -> None:
+    """Explicitly prepare the configured remote database before deployment."""
+    global _DB_INITIALIZED
+    if not os.environ.get("TURSO_DATABASE_URL", "").strip():
+        raise RuntimeError("TURSO_DATABASE_URL é obrigatório para executar a migração remota.")
+    if not os.environ.get("TURSO_AUTH_TOKEN", "").strip():
+        raise RuntimeError("TURSO_AUTH_TOKEN é obrigatório para executar a migração remota.")
+    with _DB_INIT_LOCK:
+        _initialize_db()
+        _DB_INITIALIZED = True
+
+
+def _initialize_db() -> None:
     with connect() as db:
         schema = """
             CREATE TABLE IF NOT EXISTS users (
@@ -138,21 +231,20 @@ def init_db() -> None:
             if statement.strip():
                 db.execute(statement)
         # Migrate databases created before customer accounts and delivery snapshots.
-        is_remote = bool(os.environ.get("TURSO_DATABASE_URL"))
-        order_columns = {"user_id", "delivery_address", "payment_status", "payment_method", "payment_url", "payment_invoice_slug", "payment_transaction_nsu", "payment_receipt_url"} if is_remote else {row[1] for row in db.execute("PRAGMA table_info(orders)")}
-        if "user_id" not in order_columns and not os.environ.get("TURSO_DATABASE_URL"):
+        order_columns = {row[1] for row in db.execute("PRAGMA table_info(orders)").fetchall()}
+        if "user_id" not in order_columns:
             db.execute("ALTER TABLE orders ADD COLUMN user_id TEXT REFERENCES users(id)")
-        if "delivery_address" not in order_columns and not os.environ.get("TURSO_DATABASE_URL"):
+        if "delivery_address" not in order_columns:
             db.execute("ALTER TABLE orders ADD COLUMN delivery_address TEXT NOT NULL DEFAULT '{}'")
-        for column, definition in ({} if is_remote else {
+        for column, definition in {
             "payment_status": "TEXT NOT NULL DEFAULT 'not_started'", "payment_method": "TEXT NOT NULL DEFAULT ''",
             "payment_url": "TEXT NOT NULL DEFAULT ''", "payment_invoice_slug": "TEXT NOT NULL DEFAULT ''",
             "payment_transaction_nsu": "TEXT NOT NULL DEFAULT ''", "payment_receipt_url": "TEXT NOT NULL DEFAULT ''",
-        }).items():
+        }.items():
             if column not in order_columns:
                 db.execute(f"ALTER TABLE orders ADD COLUMN {column} {definition}")
-        feedback_columns = {"rating"} if is_remote else {row[1] for row in db.execute("PRAGMA table_info(feedbacks)")}
-        if "rating" not in feedback_columns and not os.environ.get("TURSO_DATABASE_URL"):
+        feedback_columns = {row[1] for row in db.execute("PRAGMA table_info(feedbacks)").fetchall()}
+        if "rating" not in feedback_columns:
             db.execute("ALTER TABLE feedbacks ADD COLUMN rating INTEGER NOT NULL DEFAULT 5")
         timestamp = now_utc()
         for product_id, (name, model, price_cents) in PRODUCTS.items():

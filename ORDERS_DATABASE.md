@@ -12,16 +12,16 @@ py -3 server.py
 
 ## Deploy na Vercel
 
-O arquivo `server.py` exporta uma aplicação WSGI que serve os arquivos do site e encaminha a API. A Vercel executa o backend em funções Python. Em produção, use um banco Turso/libSQL remoto: o SQLite local da função não é persistente.
+A pasta `api/` encaminha as rotas `/api/*` para a aplicação WSGI de `server.py`; os arquivos do site são publicados como conteúdo estático. `vercel.json` habilita URLs sem `.html`, incluindo `/admin`. Em produção, use um banco Turso/libSQL remoto: o SQLite local da função não é persistente e a aplicação agora recusa iniciar na Vercel sem `TURSO_DATABASE_URL`.
 
 1. Crie um banco no Turso e copie a URL `libsql://...` e um token de autenticação.
-2. Importe este repositório na Vercel e faça o deploy.
-3. Em **Project Settings > Environment Variables**, configure `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `LUMI_ADMIN_EMAIL` e `LUMI_ADMIN_PASSWORD` para Production (e Preview, se quiser testar previews). Use uma senha forte com pelo menos 6 caracteres.
-4. Faça um novo deploy para aplicar as variáveis.
-5. Acesse `https://seu-dominio/admin.html` e entre com o e-mail e a senha definidos nas variáveis.
+2. Importe este repositório na Vercel com a raiz do projeto apontando para a pasta que contém `vercel.json` e configure as variáveis `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `LUMI_ADMIN_EMAIL` e `LUMI_ADMIN_PASSWORD` para Production. Use uma senha forte com pelo menos 6 caracteres; ainda não defina `LUMI_DB_SCHEMA_READY`.
+3. No ambiente seguro de onde executará a migração, use as credenciais do banco Production. Instale as dependências com `python -m pip install -r requirements.txt` e rode `python scripts/migrate_db.py` antes de liberar o deploy.
+4. Depois que a migração terminar, defina `LUMI_DB_SCHEMA_READY=1` para Production e faça um novo deploy.
+5. Para Preview, use de preferência outro banco Turso. Configure as credenciais desse banco, rode novamente `python scripts/migrate_db.py` com elas e só então defina `LUMI_DB_SCHEMA_READY=1` para Preview.
+6. Acesse `https://seu-dominio/admin` e entre com o e-mail e a senha definidos nas variáveis.
 
-O banco cria as tabelas e os produtos iniciais na primeira chamada à API. Cadastros, pedidos, sessões, configurações de pagamento e fotos enviadas pelo painel ficam no banco remoto. As fotos enviadas pelo painel têm limite de 3 MB.
-
+O runtime da Vercel não cria nem altera o esquema: sem `LUMI_DB_SCHEMA_READY=1`, a API falha com uma mensagem de configuração. Execute o comando de migração novamente sempre que uma versão introduzir mudanças de esquema, antes de liberar essa versão. Cadastros, pedidos, sessões, configurações de pagamento e fotos enviadas pelo painel ficam no banco remoto. As fotos enviadas pelo painel têm limite de 3 MB.
 O primeiro deploy começa com um banco vazio e não importa automaticamente o SQLite da pasta `.lumi-private`. O endereço público HTTPS da loja para retornos InfinitePay deve ser configurado na aba **Pagamentos** do painel.
 
 Abra `http://localhost:8000`. O banco é criado/migrado automaticamente ao iniciar. O arquivo SQLite não é servido publicamente pelo servidor.
