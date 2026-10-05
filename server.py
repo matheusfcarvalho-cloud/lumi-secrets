@@ -321,7 +321,7 @@ def order_detail(db: sqlite3.Connection, order_id: str) -> dict | None:
     if order is None:
         return None
     result = dict(order)
-    result["delivery_address"] = json.loads(result["delivery_address"] or "{}")
+    result["delivery_address"] = parse_json_object(result.get("delivery_address"))
     result["items"] = [dict(r) for r in db.execute(
         "SELECT product_id, product_name, model, unit_price_cents, quantity FROM order_items WHERE order_id = ? ORDER BY id", (order_id,)
     )]
@@ -330,9 +330,17 @@ def order_detail(db: sqlite3.Connection, order_id: str) -> dict | None:
         "SELECT occurred_at, event_type, description, details_json FROM order_history WHERE order_id = ? ORDER BY id", (order_id,)
     ):
         item = dict(event)
-        item["details"] = json.loads(item.pop("details_json"))
+        item["details"] = parse_json_object(item.pop("details_json", None))
         result["history"].append(item)
     return result
+
+
+def parse_json_object(value) -> dict:
+    try:
+        parsed = json.loads(value or "{}")
+    except (json.JSONDecodeError, TypeError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 class LumiHandler(SimpleHTTPRequestHandler):

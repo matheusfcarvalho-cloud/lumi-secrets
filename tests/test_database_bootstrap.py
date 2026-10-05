@@ -82,6 +82,29 @@ class DatabaseBootstrapTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "TURSO_AUTH_TOKEN"):
                 server.migrate_db()
 
+    def test_order_detail_tolerates_invalid_legacy_json_metadata(self):
+        db = sqlite3.connect(":memory:")
+        db.row_factory = sqlite3.Row
+        db.executescript(
+            "CREATE TABLE orders (id TEXT PRIMARY KEY, delivery_address TEXT);"
+            "CREATE TABLE order_items (id INTEGER PRIMARY KEY, order_id TEXT, product_id INTEGER, "
+            "product_name TEXT, model TEXT, unit_price_cents INTEGER, quantity INTEGER);"
+            "CREATE TABLE order_history (id INTEGER PRIMARY KEY, order_id TEXT, occurred_at TEXT, "
+            "event_type TEXT, description TEXT, details_json TEXT);"
+        )
+        db.execute("INSERT INTO orders VALUES (?, ?)", ("test-order", "not-json"))
+        db.execute(
+            "INSERT INTO order_history(order_id, occurred_at, event_type, description, details_json) "
+            "VALUES (?, ?, ?, ?, ?)",
+            ("test-order", "2026-01-01T00:00:00Z", "created", "Pedido criado", None),
+        )
+
+        result = server.order_detail(db, "test-order")
+
+        self.assertEqual(result["delivery_address"], {})
+        self.assertEqual(result["history"][0]["details"], {})
+        db.close()
+
 
 if __name__ == "__main__":
     unittest.main()
