@@ -24,7 +24,8 @@ async function api(path, options = {}) {
   const response = await fetch(path, {...options, credentials:'same-origin', headers:{...(options.headers || {}),'Content-Type':'application/json'}});
   const raw = await response.text();
   let result;
-  try { result = JSON.parse(raw); } catch { throw new Error('O servidor respondeu em formato inesperado. Confira se a API está configurada para esta publicação.'); }
+  try { result = JSON.parse(raw); } catch { const contentType = response.headers.get('content-type') || 'sem Content-Type';
+    throw new Error(`A rota ${path} respondeu em formato inesperado (HTTP ${response.status}; ${contentType}).`); }
   if (!response.ok) throw new Error(result.error || 'Falha ao consultar o painel.');
   return result;
 }
