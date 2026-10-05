@@ -436,9 +436,22 @@ class LumiHandler(SimpleHTTPRequestHandler):
             init_db()
             with connect() as db:
                 has_owner = db.execute("SELECT 1 FROM admin_credentials WHERE id = 1").fetchone() is not None
+                required_order_schema = {
+                    "orders": {"id", "created_at", "updated_at", "customer_name", "whatsapp", "status", "user_id", "delivery_address", "total_cents", "payment_status", "payment_method", "payment_url", "payment_invoice_slug", "payment_transaction_nsu", "payment_receipt_url"},
+                    "order_items": {"id", "order_id", "product_id", "product_name", "model", "unit_price_cents", "quantity"},
+                    "order_history": {"id", "order_id", "occurred_at", "event_type", "description", "details_json"},
+                }
+                missing_order_schema = {}
+                for table, required_columns in required_order_schema.items():
+                    columns = {row[1] for row in db.execute(f"PRAGMA table_info({table})").fetchall()}
+                    missing = sorted(required_columns - columns)
+                    if missing:
+                        missing_order_schema[table] = missing
             environment_owner = bool(os.environ.get("LUMI_ADMIN_EMAIL") and os.environ.get("LUMI_ADMIN_PASSWORD"))
             setup_allowed = not has_owner and not environment_owner and self.is_local_request()
-            self.send_json(200, {"configured": has_owner or environment_owner, "setup_allowed": setup_allowed})
+            self.send_json(200, {"configured": has_owner or environment_owner, "setup_allowed": setup_allowed,
+                                 "orders_schema_ready": not missing_order_schema,
+                                 "orders_schema_missing": missing_order_schema})
             return
         if path.startswith("/.lumi-private/"):
             self.send_error(404)
