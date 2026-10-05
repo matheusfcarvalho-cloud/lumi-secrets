@@ -506,8 +506,23 @@ class LumiHandler(SimpleHTTPRequestHandler):
             init_db()
             with connect() as db:
                 if path == "/api/orders":
-                    ids = [r[0] for r in db.execute("SELECT id FROM orders ORDER BY created_at DESC")]
-                    self.send_json(200, {"orders": [order_detail(db, order_id) for order_id in ids]})
+                    try:
+                        ids = [r[0] for r in db.execute("SELECT id FROM orders ORDER BY created_at DESC")]
+                        orders = [order_detail(db, order_id) for order_id in ids]
+                    except Exception as exc:
+                        diagnostic = type(exc).__name__
+                        if isinstance(exc, json.JSONDecodeError):
+                            diagnostic = "invalid JSON in saved order data"
+                        elif isinstance(exc, KeyError) and exc.args and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", str(exc.args[0])):
+                            diagnostic = f"missing field: {exc.args[0]}"
+                        else:
+                            safe_sql_error = re.fullmatch(r"no such (?:table|column): [A-Za-z_][A-Za-z0-9_]*", str(exc), re.IGNORECASE)
+                            if safe_sql_error:
+                                diagnostic = safe_sql_error.group(0)
+                        print(f"Admin orders API failed: {diagnostic}")
+                        self.send_json(500, {"error": f"Falha ao carregar pedidos ({diagnostic})."})
+                        return
+                    self.send_json(200, {"orders": orders})
                     return
                 result = order_detail(db, path.removeprefix("/api/orders/"))
                 self.send_json(200 if result else 404, result or {"error": "Pedido não encontrado."})
