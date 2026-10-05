@@ -343,12 +343,22 @@ def parse_json_object(value) -> dict:
     return parsed if isinstance(parsed, dict) else {}
 
 
+def json_fallback(value):
+    """Convert driver-specific values into JSON-safe values for API responses."""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    isoformat = getattr(value, "isoformat", None)
+    if callable(isoformat):
+        return isoformat()
+    return str(value)
+
+
 class LumiHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
     def send_json(self, status: int, payload: dict, extra_headers: dict | None = None) -> None:
-        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        body = json.dumps(payload, ensure_ascii=False, default=json_fallback).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -1016,16 +1026,25 @@ def vercel_app(environ, start_response):
         request.client_address = (environ.get("REMOTE_ADDR", "127.0.0.1"), 0)
         request.server = None
         request.directory = str(ROOT)
-        if request.command == "GET":
-            request.do_GET()
-        elif request.command == "POST":
-            request.do_POST()
-        elif request.command == "PATCH":
-            request.do_PATCH()
-        else:
-            request._status = 405
-            request.send_header("Allow", "GET, POST, PATCH")
-            request.wfile.write(b"Method not allowed")
+        try:
+            if request.command == "GET":
+                request.do_GET()
+            elif request.command == "POST":
+                request.do_POST()
+            elif request.command == "PATCH":
+                request.do_PATCH()
+            else:
+                request._status = 405
+                request.send_header("Allow", "GET, POST, PATCH")
+                request.wfile.write(b"Method not allowed")
+        except Exception as exc:
+            # Keep API failures in JSON so clients can display a useful route/status
+            # instead of Vercel's generic text/plain 500 page.
+            print(f"Vercel API handler failed for {path}: {type(exc).__name__}")
+            request._status = 500
+            request._response_headers = []
+            request.wfile = io.BytesIO()
+            request.send_json(500, {"error": f"Falha ao processar a requisição ({type(exc).__name__})."})
         body = request.wfile.getvalue()
         headers = request._response_headers
         if not any(name.lower() == "content-length" for name, _ in headers):

@@ -105,6 +105,15 @@ class DatabaseBootstrapTests(unittest.TestCase):
         self.assertEqual(result["history"][0]["details"], {})
         db.close()
 
+    def test_json_fallback_serializes_turso_binary_and_datetime_values(self):
+        from datetime import datetime, timezone
+
+        self.assertEqual(server.json_fallback(b"pedido"), "pedido")
+        self.assertEqual(
+            server.json_fallback(datetime(2026, 1, 2, tzinfo=timezone.utc)),
+            "2026-01-02T00:00:00+00:00",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
