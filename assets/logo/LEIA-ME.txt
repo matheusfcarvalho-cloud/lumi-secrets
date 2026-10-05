@@ -1,0 +1,3 @@
+﻿Coloque nesta pasta a logomarca da loja.
+
+Formatos recomendados: SVG ou PNG com fundo transparente.

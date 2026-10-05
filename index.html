@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Lumi Secrets: moda íntima feminina para vestir sua melhor versão." />
+    <title>Lumi Secrets | Vista sua luz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=header-logo-20260926" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="flowers.css" />
+    <link rel="stylesheet" href="dark-theme.css" />
+    <link rel="stylesheet" href="product-colors.css?v=header-logo-4-20260926" />
+    <link rel="stylesheet" href="checkout-payment.css?v=checkout-ux-20260928" />
+  </head>
+  <body>
+    <span class="gold-flower-detail" aria-hidden="true">❀</span>
+    <div class="announcement">Não fazemos entregas. Para dúvidas, mande mensagem no direct.</div>
+    <header class="site-header">
+      <img class="header-watermark" src="assets/logo/logo.jpeg" alt="" aria-hidden="true" />
+      <button class="icon-button menu-button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mainNav">☰</button>
+      <a class="brand" href="#inicio" aria-label="Lumi Secrets, início">lumi <span>secrets</span></a>
+      <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
+        <a href="#novidades">Novidades</a>
+        <a href="#novidades">Coleções</a>
+        <a href="#essenciais">Essenciais</a>
+        <a href="#guia">Guia de medidas</a>
+              <button class="icon-button account-button" aria-label="Criar perfil ou entrar" id="accountButton"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="accountButtonLabel">Criar perfil ou entrar</span></button>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-button" aria-label="Pesquisar" id="searchButton">⌕</button>
+        <button class="icon-button bag-button" aria-label="Abrir sacola" id="cartButton"><svg class="bag-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><b id="cartCount">0</b></button>
+      </div>
+    </header>
+    <div class="search-panel" id="searchPanel" hidden><form id="searchForm"><label for="productSearch">Buscar produtos</label><input id="productSearch" type="search" placeholder="Nome ou modelo do produto" autocomplete="off"><button class="search-submit" type="submit">Buscar</button></form><button type="button" id="closeSearch" aria-label="Fechar busca">×</button></div>
+
+    <main id="inicio">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Coleção 02 — Entrelinhas</p>
+          <h1 id="hero-title">Lumi, porque<br />toda diva<br />carrega sua<br /><em>pr&#243;pria luz.</em> &#10024;</h1>
+          <p class="hero-text">Peças pensadas para acompanhar o seu ritmo, celebrar suas formas e ficar só entre você e a sua pele.</p>
+          <a class="button button-dark" href="#novidades">Descobrir a coleção <span>↗</span></a>
+          <div class="hero-note"><span class="spark">✦</span><span>Feita para a vida real.<br /><strong>Sentida por inteira.</strong></span></div>
+        </div>
+        <div class="hero-image-wrap">
+          <img src="https://images.unsplash.com/photo-1617331140180-e8262094733a?auto=format&fit=crop&w=1200&q=85" alt="Mulher usando lingerie preta" />
+          <div class="image-stamp">lumi<br /><small>secrets</small></div>
+          <span class="vertical-label">body · couro vegetal · edição limitada</span>
+        </div>
+      </section>
+
+      <section class="products-section" id="novidades">
+        <div class="section-heading">
+          <div><p class="eyebrow">Escolhas da Lumi</p><h2>Para deixar<br /><em>por perto.</em></h2></div>
+          <div class="section-intro"><p>Texturas que convidam ao toque, modelagens que respeitam seu corpo. Escolha seu novo essencial.</p><button class="text-button" id="viewAll">Ver todos <span>↗</span></button></div>
+        </div>
+        <div class="filters" role="group" aria-label="Filtrar produtos">
+          <button class="filter active" data-filter="todos">Todos</button><button class="filter" data-filter="sutiãs">Sutiãs</button><button class="filter" data-filter="calcinhas">Calcinhas</button><button class="filter" data-filter="conjuntos">Conjuntos</button><button class="filter" data-filter="sleepwear">Sleepwear</button><button class="price-filter-toggle" id="priceFilterToggle" type="button" aria-expanded="false" aria-controls="priceFilterPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M7 12h10m-7 6h4"/><circle cx="8" cy="6" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="18" r="1.5" fill="currentColor"/></svg>Preço</button>
+        </div>
+        <div class="price-filter-panel" id="priceFilterPanel" aria-label="Ordenar produtos pelo preço" hidden><button type="button" class="price-sort-option" data-price-sort="asc" aria-pressed="false">Menor para maior <span aria-hidden="true">↑</span></button><button type="button" class="price-sort-option" data-price-sort="desc" aria-pressed="false">Maior para menor <span aria-hidden="true">↓</span></button><button type="button" class="price-sort-option" data-price-sort="default" aria-pressed="true">Padrão</button></div><div class="product-grid" id="productGrid"></div>
+      </section>
+
+      <section class="manifesto" id="essenciais"><div class="manifesto-image"><img src="https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=1000&q=85" alt="Detalhe de tecido delicado" /></div><div class="manifesto-copy"><p class="eyebrow">O jeito Lumi</p><h2>Seu corpo é<br /><em>casa.</em></h2><p>Não criamos peças para transformar você. Criamos para revelar o que já existe: a sua presença, seu conforto, o seu jeito único de ocupar espaço.</p><a class="text-button" href="#guia">Conheça a Lumi <span>↗</span></a></div></section>
+
+      <section class="size-guide" id="guia"><div><p class="eyebrow">Ajuste perfeito</p><h2>Seu tamanho,<br /><em>do seu jeito.</em></h2></div><p>Na dúvida entre dois tamanhos? A gente te ajuda a encontrar o caimento que faz você esquecer que está usando.</p><button class="button button-outline" id="guideButton">Abrir guia de medidas</button></section>
+      <section class="feedback-section" id="feedbacks" hidden><button class="feedback-close" type="button" aria-label="Fechar feedbacks" onclick="document.getElementById('feedbacks').hidden=true">×</button><div class="feedback-intro"><p class="eyebrow">Histórias reais</p><h2>Quem veste,<br /><em>conta.</em></h2><p>Seu olhar ajuda a Lumi Secrets a criar peças ainda mais especiais.</p></div><div class="feedback-list" id="feedbackList"></div><form class="feedback-form" id="feedbackForm"><p>Feedbacks podem ser enviados pelo perfil que realizou um pedido.</p><fieldset class="rating-field"><legend>Sua avaliação</legend><div class="rating-stars" role="radiogroup" aria-label="Avalie de 1 a 5 estrelas"><input id="rating5" name="rating" type="radio" value="5" required /><label for="rating5" aria-label="5 estrelas">★</label><input id="rating4" name="rating" type="radio" value="4" /><label for="rating4" aria-label="4 estrelas">★</label><input id="rating3" name="rating" type="radio" value="3" /><label for="rating3" aria-label="3 estrelas">★</label><input id="rating2" name="rating" type="radio" value="2" /><label for="rating2" aria-label="2 estrelas">★</label><input id="rating1" name="rating" type="radio" value="1" /><label for="rating1" aria-label="1 estrela">★</label></div></fieldset><label for="feedbackMessage">Seu feedback</label><textarea id="feedbackMessage" name="message" rows="4" placeholder="Conte como foi sua experiência" required></textarea><button class="button button-dark" type="submit">Publicar feedback <span>↗</span></button></form></section>
+    </main>
+
+    <footer><div class="brand footer-brand"><img class="brand-logo" src="assets/logo/logo.jpeg" alt="Lumi Secrets" /></div><p>Intimidade para todos os seus dias.</p><div class="footer-links"><a href="#feedbacks" onclick="document.getElementById('feedbacks').hidden=false">Feedbacks</a><a class="social-link instagram-link" href="https://www.instagram.com/use.lumisecrets?utm_source=ig_web_button_share_sheet&amp;stkn=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="instagramGradient" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".5" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r=".8" fill="currentColor"/></svg><span>Instagram</span></a><a href="#exchangePolicy">Política de trocas</a></div></footer>
+
+    <aside class="cart-drawer" id="cartDrawer" aria-label="Sua sacola" aria-hidden="true"><div class="drawer-head"><div><p class="eyebrow">Sua seleção</p><h2>Sacola <span id="drawerCount">(0)</span></h2></div><button class="close-button" id="closeCart" aria-label="Fechar sacola">×</button></div><div class="cart-items" id="cartItems"><div class="empty-cart">Sua sacola está esperando<br /><em>por uma escolha bonita.</em></div></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">R$ 0,00</strong></div><button class="button button-dark full-width" id="checkoutButton">Ir para o checkout <span>↗</span></button><small>Impostos e frete calculados na finalização.</small></div></aside><div class="overlay" id="overlay"></div>
+    <div class="toast" id="toast" role="status">Peça adicionada à sacola.</div>
+    <div class="modal" id="guideModal" aria-hidden="true"><div class="modal-content"><button class="close-button" id="closeGuide">×</button><p class="eyebrow">Guia de medidas</p><h2>Encontre seu<br /><em>caimento.</em></h2><p>Meça o busto e o quadril sem apertar a fita. Entre dois tamanhos, escolha o maior para um ajuste mais confortável.</p><div class="size-table"><div><b>Tamanho</b><b>Busto</b><b>Quadril</b></div><div><span>PP</span><span>80–84</span><span>86–90</span></div><div><span>P</span><span>85–89</span><span>91–95</span></div><div><span>M</span><span>90–94</span><span>96–100</span></div><div><span>G</span><span>95–100</span><span>101–106</span></div></div></div></div>
+    <div class="modal" id="accountModal" aria-hidden="true"><form class="modal-content order-modal account-modal" id="accountForm"><button class="close-button" type="button" id="closeAccount" aria-label="Fechar">×</button><p class="eyebrow">Lumi Secrets</p><h2 id="accountTitle">Crie seu<br /><em>perfil.</em></h2><p id="accountStatus">Cadastre seu endereço para receber seus pedidos.</p><div id="accountNameRow"><label for="accountName">Nome completo</label><input id="accountName" name="name" autocomplete="name" required minlength="2" maxlength="120" /></div><div id="accountEmailRow"><label for="accountEmail">E-mail</label><input id="accountEmail" name="email" type="email" autocomplete="email" required maxlength="254" /></div><div id="accountPasswordRow"><label for="accountPassword">Senha (mínimo 6 caracteres)</label><input id="accountPassword" name="password" type="password" autocomplete="new-password" minlength="6" required /></div><div id="accountProfileFields"><label for="accountWhatsapp">WhatsApp</label><input id="accountWhatsapp" name="whatsapp" type="tel" autocomplete="tel" required /><label for="accountCep">CEP</label><input id="accountCep" name="cep" autocomplete="postal-code" inputmode="numeric" maxlength="9" required /><small id="cepLookupStatus" class="cep-lookup-status" role="status" aria-live="polite"></small><label for="accountStreet">Rua/Avenida</label><input id="accountStreet" name="street" autocomplete="address-line1" required /><label for="accountNumber">Número</label><input id="accountNumber" name="number" required /><label for="accountComplement">Complemento (opcional)</label><input id="accountComplement" name="complement" autocomplete="address-line2" /><label for="accountNeighborhood">Bairro</label><input id="accountNeighborhood" name="neighborhood" required /><label for="accountCity">Cidade</label><input id="accountCity" name="city" autocomplete="address-level2" required /><label for="accountState">Estado (UF)</label><input id="accountState" name="state" autocomplete="address-level1" maxlength="2" required /></div><button class="button button-dark full-width" id="accountSubmit" type="submit">Criar perfil</button><button class="account-mode-toggle" id="accountModeToggle" type="button">Já tem perfil? Entrar</button><button class="account-logout" id="logoutAccount" type="button" hidden>Sair do perfil</button></form></div>    <div class="modal" id="checkoutModal" aria-hidden="true"><form class="modal-content order-modal" id="orderForm"><button class="close-button" type="button" id="closeCheckout" aria-label="Fechar">×</button><p class="eyebrow">Finalizar pedido</p><h2>Endereço<br /><em>de entrega.</em></h2><p>O pedido será enviado para o endereço do seu perfil:</p><div class="delivery-address-preview"><strong id="checkoutRecipient"></strong><span id="checkoutAddress"></span></div><button class="button button-dark full-width" type="submit">Confirmar pedido <span>↗</span></button><section id="orderConfirmation" class="order-confirmation" role="status" aria-live="polite" hidden><p class="eyebrow">Pedido recebido</p><h3>Obrigado pela compra! ✨</h3><p>Sua compra foi registrada com sucesso. Guarde o número do pedido:</p><strong id="confirmedOrderNumber"></strong></section></form></div>
+    <div class="modal" id="welcomeModal" aria-hidden="true"><section class="modal-content welcome-modal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle"><button class="close-button" type="button" id="closeWelcome" aria-label="Fechar mensagem">×</button><p class="eyebrow">Lumi Secrets</p><h2 id="welcomeTitle">Seja bem-vinda,<br /><em>diva!</em> ✨</h2><p>Seu cadastro foi concluído com sucesso. Ficamos felizes em ter você por aqui!</p><button class="button button-dark full-width" type="button" id="welcomeContinue">Continuar</button></section></div>
+
+    <div class="modal" id="exchangePolicy" aria-hidden="true"><section class="modal-content exchange-policy-content" role="dialog" aria-modal="true" aria-labelledby="exchangePolicyTitle"><button class="close-button" type="button" id="closeExchangePolicy" aria-label="Fechar política">×</button><p class="eyebrow">Lumi Secrets</p><h2 id="exchangePolicyTitle">Trocas e<br /><em>devoluções.</em></h2><p>Por questões de higiene, não aceitamos devoluções voluntárias nem trocas de peças íntimas por tamanho, cor ou preferência. Essa regra não limita os direitos garantidos por lei.</p><p>Nas compras feitas pela internet, o direito de arrependimento pode ser exercido em até 7 dias após o recebimento, conforme o art. 49 do Código de Defesa do Consumidor. Os direitos previstos em lei para produtos com defeito também são respeitados.</p><p>Para solicitar atendimento, mande uma mensagem pelo <a href="https://www.instagram.com/use.lumisecrets/" target="_blank" rel="noopener noreferrer">Instagram Direct</a>.</p></section></div>
+    <script src="app.js?v=checkout-ux-20260928"></script>
+    <script src="checkout-payment.js?v=pix-copy-info-20260928"></script>
+  </body>
+</html>

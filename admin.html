@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel do dono | Lumi Secrets</title>
+  <link rel="stylesheet" href="admin.css?v=infinitepay-settings-20260926" />
+</head>
+<body>
+  <header class="admin-header"><a href="/" class="brand">lumi <span>secrets</span></a><a href="/">Voltar à loja</a></header>
+  <main class="admin-main">
+    <section class="admin-intro"><p class="eyebrow">Área do lojista</p><h1>Painel da <em>Lumi Secrets.</em></h1><p>Gerencie pedidos, produtos, preços e feedbacks dos clientes.</p></section>
+    <section class="access-card" id="accessCard"><h2 id="accessTitle">Acesso administrativo</h2><p id="accessDescription">Verificando o acesso...</p><form id="accessForm"><label for="adminEmail">E-mail do dono</label><input id="adminEmail" type="email" autocomplete="username" required maxlength="254" /><label for="adminPassword">Senha</label><input id="adminPassword" type="password" autocomplete="current-password" required /><button id="accessSubmit" type="submit">Acessar pedidos</button><p id="accessError" role="alert"></p></form></section>
+    <section class="orders-section" id="ordersSection" hidden>
+      <div class="orders-toolbar"><h2>Visão geral da loja</h2><div><button id="refreshOrders" type="button">Atualizar</button><button id="logoutAdmin" type="button">Sair</button></div></div>
+      <nav class="admin-tabs" aria-label="Seções do painel"><button type="button" data-admin-tab="orders" class="active">Pedidos</button><button type="button" data-admin-tab="products">Produtos</button><button type="button" data-admin-tab="feedback">Feedbacks</button><button type="button" data-admin-tab="customers">Clientes</button><button type="button" data-admin-tab="payments">Pagamentos</button></nav>
+      <p id="ordersMessage" role="status"></p>
+      <section class="admin-panel" data-admin-panel="orders"><div id="orderList" class="order-list"></div></section>
+      <section class="admin-panel" data-admin-panel="products" hidden>
+        <div class="panel-heading"><div><h3>Produtos da loja</h3><p>Cadastre produtos, ajuste valores e retire ou reative itens do catálogo.</p></div><button type="button" id="newProductButton">Adicionar produto</button></div>
+        <form id="productForm" class="product-form" hidden>
+          <h3 id="productFormTitle">Novo produto</h3><input name="id" type="hidden" />
+          <label>Nome<input name="name" required maxlength="120" /></label>
+          <label>Modelo (opcional)<input name="model" maxlength="120" /></label>
+          <label>Categoria<select name="type" required><option value="sutiãs">Sutiãs</option><option value="calcinhas">Calcinhas</option><option value="conjuntos">Conjuntos</option><option value="sleepwear">Sleepwear</option></select></label>
+          <label>Etiqueta opcional<input name="label" maxlength="60" placeholder="Novo, Mais vendido..." /></label>
+          <label>Preço (R$)<input name="price" type="number" min="0" max="1000000" step="0.01" required /></label>
+          <label>Link da imagem (opcional)<input name="image" type="text" placeholder="https://..." /></label><label>Ou escolha uma foto do dispositivo<input name="image_file" type="file" accept="image/jpeg,image/png,image/webp" /></label><small class="image-upload-help">JPG, PNG ou WEBP de até 3 MB. Se escolher um arquivo, ele será usado no produto.</small>
+          <div class="product-form-actions"><button type="submit">Salvar produto</button><button type="button" id="cancelProductEdit">Cancelar</button></div>
+          <p id="productFormMessage" role="status"></p>
+        </form>
+        <div id="adminProductList" class="admin-product-list"></div>
+      </section>
+      <section class="admin-panel" data-admin-panel="feedback" hidden><div class="panel-heading"><div><h3>Feedbacks de clientes</h3><p>Comentários enviados por clientes que já fizeram um pedido.</p></div></div><div id="adminFeedbackList" class="admin-feedback-list"></div></section>
+      <section class="admin-panel" data-admin-panel="customers" hidden><div class="panel-heading"><div><h3>Perfis de clientes</h3><p>Dados de cadastro, endereço de entrega e compras registradas.</p></div></div><div id="adminCustomerList" class="admin-customer-list"></div></section>
+      <section class="admin-panel" data-admin-panel="payments" hidden><div class="panel-heading"><div><h3>InfinitePay</h3><p>O checkout online oferece Pix e cartão de crédito; débito online não está disponível nesta integração.</p></div></div><form id="paymentSettingsForm" class="payment-settings-form"><label>InfiniteTag<input name="handle" maxlength="80" placeholder="Sua identificação no InfinitePay, sem $" /></label><label>Endereço público HTTPS da loja<input name="public_url" type="url" placeholder="https://www.sualoja.com.br" /></label><p>O endereço público permite retornar o cliente à loja e receber a confirmação automática. Em desenvolvimento local, deixe em branco.</p><button type="submit">Salvar configuração</button><p id="paymentSettingsMessage" role="status"></p></form></section>
+    </section>
+  </main>
+  <script src="admin.js?v=infinitepay-settings-20260926"></script>
+</body>
+</html>
