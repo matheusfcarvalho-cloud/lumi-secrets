@@ -1,0 +1,64 @@
+/* Fundo rosa beb? e texto com contraste em todas as ?reas da loja. */
+:root{--ink:#241820;--paper:#f0a9c5;--rose:#e992b5;--wine:#792c4e;--muted:#51414a;--line:#d47d9f;--white:#fffafd}
+body,.products-section,.category-strip{background:var(--paper);color:var(--ink)}
+.site-header,.hero,.manifesto,.size-guide,.feedback-section,.footer{background:#e992b5;border-color:var(--line)}
+.hero-text,.hero-note,.manifesto-copy>p:not(.eyebrow){color:var(--muted)}
+.cart-drawer,.modal-content{background:#fffafd;color:var(--ink)}
+.product-name,.product-meta .product-price,.product-type,.filter,.filter.active,.filter:hover,.category-strip strong,.category-strip small{color:var(--ink)}
+.product-name,.filter.active,.category-strip strong{color:var(--wine)}
+.main-nav .account-button{color:var(--ink)!important;border-color:var(--line)}
+.main-nav .account-button:hover{background:#f0a9c5;border-color:var(--wine)}
+.brand,.footer-brand{color:var(--wine)!important}
+.icon-button:hover,.category-strip a:hover{background:#fffafd}
+.payment-methods{background:#f0a9c5;border-color:var(--line);color:var(--ink)}
+.payment-method{background:#fffafd;border-color:var(--line)}
+.payment-methods-heading small,.payment-method small{color:var(--muted)}
+.payment-security-note,.payment-debit-note{color:var(--muted)!important}
+.payment-lock,.payment-symbol{color:var(--wine)}
+@media(max-width:800px){.site-header,.main-nav.open{background:#e992b5}.main-nav.open>a{color:var(--ink);border-color:var(--line)}}
+
+/* Stronger text contrast and a white background at the end of the page. */
+body{font-weight:500}
+.eyebrow,.text-button span,.stars{color:var(--wine)}
+.main-nav,.filter,.product-type,.category-strip small{font-size:13px;font-weight:600}
+.hero-text,.section-intro,.manifesto-copy>p:not(.eyebrow){font-size:15px;line-height:1.7}
+.hero-note{font-size:13px}
+.product-name{font-weight:700}
+.product-meta .product-price{font-weight:700;font-size:15px}
+.filter.active:after{background:var(--wine)}
+footer,.footer,.feedback-section,.feedback-card,.feedback-form input,.feedback-form textarea,#exchangePolicy .modal-content{background:#fff;color:var(--ink)}
+footer p,.footer-links a{font-size:14px;font-weight:600;line-height:1.6}
+.feedback-intro>p:last-child,.feedback-card strong,.feedback-form label{color:var(--muted);font-size:13px}
+.feedback-card p{color:var(--ink)}
+.feedback-form input,.feedback-form textarea{font-size:14px}
+.footer-links a:focus-visible{outline:2px solid var(--wine);outline-offset:5px}
+/* Announcement coordinated with the pink palette. */
+.announcement{background:#9b3d65;color:#fff;padding:12px 20px;font-size:13px;font-weight:600;line-height:1.6;letter-spacing:.02em}
+/* Vivid gold details with darker gold for readable icons and labels. */
+:root{--gold:#e9b52c}
+.product-bag-button{color:#926000;filter:drop-shadow(0 0 2px #ffe69b)}
+.product-bag-button:hover,.product-bag-button:focus-visible{color:#704700}
+.bag-button b{background:#ffd447;color:#241820;box-shadow:0 0 5px #ffe69b}
+.stars{color:#926000}
+.rating-stars input:checked~label,.rating-stars label:hover,.rating-stars label:hover~label{color:#a46b00;text-shadow:0 0 3px #ffe69b}
+.payment-lock{border-color:var(--gold)}
+.price-filter-panel .price-sort-option{border-color:var(--gold)!important}
+.price-filter-panel .price-sort-option[aria-pressed="true"]{background:var(--gold)!important;border-color:var(--gold)!important}
+.price-filter-panel .price-sort-option:hover{background:#f5cd62!important}
+/* Flowers remain behind photos and readable content. */
+.hero-image-wrap,.manifesto-image,.product-image{position:relative;z-index:2}
+.hero-copy,.manifesto-copy,.section-heading,.filters,.product-meta,.category-strip a,.size-guide>*{position:relative;z-index:2}
+footer,.feedback-section{position:relative;z-index:2}
+/* Stronger background logo, preserving the current header layout. */
+.site-header .header-watermark{opacity:1;filter:brightness(1.02) contrast(1.3) saturate(1.3)}
+
+/* Gold Lumi lettering in the header. */
+.site-header .brand{color:#956100!important;text-shadow:0 1px 1px #ffe69b}
+
+/* Gold highlight for the main slogan. */
+#hero-title em{color:#956100;text-shadow:0 1px 1px #ffe69b}
+
+.about-lumi-content{background:#fff;max-width:620px;max-height:90vh;overflow-y:auto}
+.about-lumi-content>p:not(.eyebrow){max-width:none;color:var(--ink);font-size:15px;line-height:1.8;margin:18px 0}
+.about-lumi-content p a{color:var(--wine);font-weight:700;text-decoration:underline}
+.about-lumi-content .about-lumi-signature{font-weight:700;color:var(--wine)}

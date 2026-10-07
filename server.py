@@ -33,6 +33,35 @@ PRODUCTS = {
     7: ("Conjunto Sol", "Conjuntos", 27990), 8: ("Robe Lua", "Sleepwear", 24990),
 }
 ADDRESS_FIELDS = ("cep", "street", "number", "complement", "neighborhood", "city", "state")
+SITE_IMAGES = {
+    "hero": "assets/editorial/modelo-cetim-rosa.png",
+    "manifesto": "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=1000&q=85",
+    "header_watermark": "assets/logo/logo.jpeg",
+    "footer_logo": "assets/logo/logo.jpeg",
+}
+
+
+def site_images(db):
+    images = dict(SITE_IMAGES)
+    for row in db.execute("SELECT setting_key,setting_value FROM shop_settings WHERE setting_key LIKE 'site_image_%'"):
+        key = row["setting_key"].removeprefix("site_image_")
+        if key in images:
+            images[key] = row["setting_value"]
+    return images
+
+
+def validate_site_image(value):
+    if not isinstance(value, str) or not value.strip() or len(value) > 1000:
+        raise ValueError("Informe uma imagem válida.")
+    value = value.strip()
+    parsed = urlparse(value)
+    if parsed.scheme in ("http", "https") and parsed.netloc:
+        return value
+    if re.fullmatch(r"/api/product-images/[a-f0-9]{32}", value):
+        return value
+    if value.startswith(("assets/", "/assets/")) and ".." not in value and "\\" not in value:
+        return value
+    raise ValueError("Use uma imagem enviada ou um link HTTP/HTTPS válido.")
 _DB_INITIALIZED = False
 _DB_INIT_LOCK = threading.Lock()
 
@@ -291,7 +320,7 @@ def normalize_profile(data: dict, require_email: bool = False) -> dict:
         raise ValueError("Informe um e-mail válido.")
     if len(re.sub(r"\D", "", profile["whatsapp"])) < 8:
         raise ValueError("Informe um WhatsApp válido.")
-    if len(re.sub(r"\D", "", profile["cep"])) not in (8, 9):
+    if len(re.sub(r"\D", "", profile["cep"])) != 8:
         raise ValueError("Informe um CEP válido.")
     for key in ("street", "number", "neighborhood", "city", "state"):
         if not profile[key]:
@@ -438,6 +467,14 @@ class LumiHandler(SimpleHTTPRequestHandler):
                               (token_hash, now_utc())).fetchone() is not None
     def do_GET(self) -> None:
         path = unquote(urlparse(self.path).path)
+        if path in ("/api/site-images", "/api/admin/site-images"):
+            if path.startswith("/api/admin/") and not self.admin_allowed():
+                self.send_json(401, {"error": "Acesso administrativo necessario."})
+                return
+            init_db()
+            with connect() as db:
+                self.send_json(200, {"images": site_images(db)})
+            return
         if path in ("/server.py", "/ORDERS_DATABASE.md"):
             self.send_error(404)
             return
@@ -554,6 +591,26 @@ class LumiHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlparse(self.path).path
+        if path == "/api/admin/site-images":
+            if not self.admin_allowed():
+                self.send_json(401, {"error": "Acesso administrativo necessário."})
+                return
+            try:
+                data = self.read_json()
+                if not data or any(key not in SITE_IMAGES for key in data):
+                    raise ValueError("Imagem do site inválida.")
+                values = {key: validate_site_image(value) for key, value in data.items()}
+                init_db()
+                with connect() as db:
+                    for key, value in values.items():
+                        db.execute("INSERT INTO shop_settings(setting_key,setting_value,updated_at) VALUES (?,?,?) ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value,updated_at=excluded.updated_at",
+                                   ("site_image_" + key, value, now_utc()))
+                    self.send_json(200, {"images": site_images(db)})
+            except (ValueError, TypeError, json.JSONDecodeError) as exc:
+                self.send_json(400, {"error": str(exc)})
+            except Exception:
+                self.send_json(500, {"error": "Não foi possível salvar a imagem do site."})
+            return
         if path == "/api/admin/setup":
             self.handle_admin_setup()
             return

@@ -78,7 +78,7 @@ async function loadPaymentSettings() {
 async function loadDashboard() {
   try {
     const count = await loadOrders();
-    await Promise.all([loadProducts(), loadFeedback(), loadCustomers(), loadPaymentSettings()]);
+    await Promise.all([loadProducts(), loadFeedback(), loadCustomers(), loadPaymentSettings(), loadSiteImages()]);
     ordersMessage.textContent = `${count} pedido(s) registrados`;
     accessCard.hidden = true;
     ordersSection.hidden = false;
@@ -171,6 +171,47 @@ adminProductList.addEventListener('click', async event => {
   catch (error) { ordersMessage.textContent = error.message; }
   finally { toggle.disabled = false; }
 });
+
+const siteImageLabels = {hero:'Foto principal', manifesto:'Foto da se\u00e7\u00e3o O jeito Lumi', header_watermark:'Logo ao fundo do cabe\u00e7alho', footer_logo:'Logo no rodap\u00e9'};
+async function loadSiteImages() {
+  const {images} = await api('/api/admin/site-images');
+  document.querySelector('#siteImageList').innerHTML = Object.entries(siteImageLabels).map(([key,label]) => `<form class="site-image-card" data-site-image="${key}"><h4>${label}</h4><img class="site-image-preview" src="${escapeHtml(images[key])}" alt="${escapeHtml(label)}"><label>Link da imagem<input name="image" type="text" value="${escapeHtml(images[key])}" maxlength="1000" /></label><label>Ou escolha uma foto<input name="image_file" type="file" accept="image/jpeg,image/png,image/webp" /></label><p class="image-upload-help">Se escolher um arquivo, ele substitui o link.</p><button type="submit">Salvar imagem</button><p class="site-image-message" role="status" aria-live="polite"></p></form>`).join('');
+}
+document.querySelector('#goToProductImages').addEventListener('click', () => selectPanel('products'));
+document.querySelector('#siteImageList').addEventListener('change', event => {
+  if (event.target.name !== 'image_file') return;
+  const file = event.target.files[0];
+  if (!file) return;
+  const form = event.target.closest('form');
+  const message = form.querySelector('.site-image-message');
+  if (file.size > 3 * 1024 * 1024 || !['image/jpeg','image/png','image/webp'].includes(file.type)) {
+    message.textContent = 'Escolha JPG, PNG ou WEBP de at\u00e9 3 MB.';
+    event.target.value = ''; return;
+  }
+  message.textContent = 'Pr\u00e9via da foto selecionada. Clique em Salvar imagem para publicar.';
+  const reader = new FileReader();
+  reader.onload = () => { if (event.target.files[0] === file) form.querySelector('img').src = reader.result; };
+  reader.readAsDataURL(file);
+});
+document.querySelector('#siteImageList').addEventListener('submit', async event => {
+  const form = event.target.closest('[data-site-image]'); if (!form) return;
+  event.preventDefault();
+  const button = form.querySelector('[type="submit"]');
+  const message = form.querySelector('.site-image-message');
+  button.disabled = true; message.textContent = 'Salvando imagem...';
+  try {
+    let image = form.elements.image.value.trim();
+    const file = form.elements.image_file.files[0];
+    if (file) image = await uploadProductImage(file);
+    const {images} = await api('/api/admin/site-images', {method:'POST', body:JSON.stringify({[form.dataset.siteImage]:image})});
+    form.elements.image.value = images[form.dataset.siteImage];
+    form.elements.image_file.value = '';
+    form.querySelector('img').src = images[form.dataset.siteImage];
+    message.textContent = 'Imagem salva! Ela aparecer\u00e1 na loja ao abrir ou atualizar a p\u00e1gina.';
+  } catch (error) { message.textContent = error.message; }
+  finally { button.disabled = false; }
+});
+
 (async () => { if (sessionStorage.getItem(ADMIN_TAB_KEY) !== 'active') { try { await fetch('/api/admin/logout', {method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:'{}'}); } catch {} }
   await loadAccessStatus();
   if (sessionStorage.getItem(ADMIN_TAB_KEY) === 'active') await loadDashboard();

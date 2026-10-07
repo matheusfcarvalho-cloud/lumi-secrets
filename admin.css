@@ -3,3 +3,10 @@
 .image-upload-help{grid-column:1/-1;color:var(--muted);font-size:11px}.product-form input[type=file]{padding:9px;background:var(--paper)}
 .admin-feedback-stars{color:var(--gold);font-size:19px;letter-spacing:2px;margin:6px 0}
 .payment-settings-form{max-width:650px;display:grid;gap:12px;padding:20px;background:#fff;border:1px solid var(--line)}.payment-settings-form label{display:grid;gap:6px;font-size:12px;font-weight:700}.payment-settings-form input{padding:11px;border:1px solid var(--line);font:14px Arial,sans-serif}.payment-settings-form>p{font-size:12px;color:var(--muted)}.payment-settings-form button{justify-self:start;padding:11px 16px;background:var(--wine);color:white;border:0;cursor:pointer}.payment-settings-form #paymentSettingsMessage{min-height:1em;color:var(--wine)}.payment-status{margin:10px 0;font-size:12px;color:var(--muted)}.payment-status a{color:var(--wine);text-decoration:underline;font-weight:700}
+
+.site-image-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.site-image-card{padding:20px;border:1px solid var(--line,#e4cdd2);background:#fff;border-radius:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.site-image-card h4{margin:0;font-size:18px}.site-image-preview{width:100%;height:220px;object-fit:contain;background:#faf3f6;border-radius:8px}
+.site-image-card label{display:grid;gap:6px;font-weight:600;font-size:13px}.site-image-card input{width:100%;min-width:0;padding:10px;border:1px solid #d9bbc2;border-radius:6px;font:inherit}
+.site-image-message{min-height:1.5em;margin:0;font-size:13px;line-height:1.6}.site-image-card .image-upload-help{margin:0}
+@media(max-width:650px){.site-image-list{grid-template-columns:1fr}}

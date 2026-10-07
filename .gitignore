@@ -8,3 +8,6 @@
 !.env.example
 __pycache__/
 *.py[cod]
+
+# Local server logs and temporary image review files
+tmp/
