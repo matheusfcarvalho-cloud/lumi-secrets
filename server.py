@@ -62,6 +62,25 @@ def validate_site_image(value):
     if value.startswith(("assets/", "/assets/")) and ".." not in value and "\\" not in value:
         return value
     raise ValueError("Use uma imagem enviada ou um link HTTP/HTTPS válido.")
+
+
+def is_valid_infinitepay_checkout_url(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = urlparse(value)
+        return (
+            parsed.scheme == "https"
+            and parsed.hostname in {"checkout.infinitepay.io", "checkout.infinitepay.com.br"}
+            and parsed.port in (None, 443)
+            and not parsed.username
+            and not parsed.password
+            and bool(parsed.path.strip("/"))
+        )
+    except ValueError:
+        return False
+
+
 _DB_INITIALIZED = False
 _DB_INIT_LOCK = threading.Lock()
 
@@ -702,8 +721,8 @@ class LumiHandler(SimpleHTTPRequestHandler):
                 with connect() as db: db.execute("UPDATE orders SET payment_status='link_error',updated_at=? WHERE id=?",(now_utc(),order_id))
                 self.send_json(502,{"error":"A InfinitePay não conseguiu gerar o link agora. O pedido ficou pendente; tente novamente ou confira a conta."})
                 return
-            checkout_url=str(checkout.get("url",""))
-            if not checkout_url.startswith("https://checkout.infinitepay.com.br/"):
+            checkout_url=checkout.get("url","")
+            if not is_valid_infinitepay_checkout_url(checkout_url):
                 with connect() as db: db.execute("UPDATE orders SET payment_status='link_error',updated_at=? WHERE id=?",(now_utc(),order_id))
                 self.send_json(502,{"error":"A InfinitePay retornou um link de checkout inválido."})
                 return
