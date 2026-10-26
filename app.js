@@ -18,9 +18,57 @@ function escapeProduct(value){return String(value??'').replace(/[&<>"']/g,char=>
 function normalizeText(value){const decoded=value.replace(/[\u00c2\u00c3][\u0080-\u00bf]/g,match=>String.fromCharCode(((match.charCodeAt(0)&31)<<6)|(match.charCodeAt(1)&63)));return decoded.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function renderProducts(){const filtered=searchQuery||activeFilter==='todos'?products:products.filter(p=>p.type===activeFilter);const list=filtered.filter(p=>!searchQuery||normalizeText(`${p.name} ${p.model||''} ${p.type} ${p.label} ${p.id}`).includes(normalizeText(searchQuery))).sort((a,b)=>priceSort==='asc'?a.price-b.price:priceSort==='desc'?b.price-a.price:0);grid.innerHTML=list.length?list.map(p=>`<article class="product-card"><div class="product-image"><img src="${escapeProduct(p.image)}" alt="${escapeProduct(p.name)}" loading="lazy">${p.label?`<span class="product-tag">${escapeProduct(p.label)}</span>`:''}</div><div class="product-meta"><div><div class="product-title-row"><span class="product-name">${escapeProduct(p.name)}</span><button class="product-bag-button" type="button" data-add="${Number(p.id)}" aria-label="Adicionar produto à sacola"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></button></div><span class="product-type">${escapeProduct(p.type)}</span></div><span class="product-price">${formatPrice(p.price)}</span></div></article>`).join(''):'<p class="search-empty">Nenhum produto encontrado com esses filtros.</p>'}
 function renderCart(){const items=document.querySelector('#cartItems');document.querySelector('#cartCount').textContent=cart.length;document.querySelector('#drawerCount').textContent=`(${cart.length})`;const total=cart.reduce((sum,p)=>sum+p.price,0);document.querySelector('#cartSubtotal').textContent=formatPrice(total);if(!cart.length){items.innerHTML='<div class="empty-cart">Sua sacola está esperando<br><em>por uma escolha bonita.</em></div>';return}items.innerHTML=cart.map((p,i)=>`<div class="cart-item"><img src="${escapeProduct(p.image)}" alt="${escapeProduct(p.name)}"><div><h3>${escapeProduct(p.name)}</h3><small>${escapeProduct(p.type)} · Tamanho P</small><br><strong>${formatPrice(p.price)}</strong></div><button class="remove-item" data-remove="${i}">remover</button></div>`).join('')}
-async function loadStoreProducts(){try{const response=await fetch('/api/products',{cache:'no-store'});if(!response.ok)return;const result=await response.json();if(!Array.isArray(result.products))return;products.splice(0,products.length,...result.products.map(item=>({...item,price:item.price_cents/100})));cart=cart.map(item=>products.find(product=>product.id===item.id)).filter(Boolean);renderProducts();renderCart()}catch{}}
+const productLoadStatus=document.createElement('p');
+productLoadStatus.className='search-empty';
+productLoadStatus.setAttribute('role','status');
+productLoadStatus.setAttribute('aria-live','polite');
+productLoadStatus.hidden=true;
+grid.before(productLoadStatus);
+async function loadStoreProducts(){
+  try{
+    const response=await fetch('/api/products',{cache:'no-store'});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const result=await response.json();
+    if(!Array.isArray(result.products))throw new Error('Formato de catálogo inválido.');
+    const loadedProducts=result.products.map(item=>{
+      if(!Number.isInteger(item?.id)||item.id<1||typeof item.name!=='string'||typeof item.type!=='string'||typeof item.image!=='string'||!Number.isInteger(item.price_cents)||item.price_cents<0){
+        throw new Error('Produto inválido recebido do servidor.');
+      }
+      return {...item,price:item.price_cents/100};
+    });
+    products.splice(0,products.length,...loadedProducts);
+    cart=cart.map(item=>products.find(product=>product.id===item.id)).filter(Boolean);
+    renderProducts();
+    renderCart();
+    productLoadStatus.hidden=true;
+  }catch{
+    productLoadStatus.textContent='Não foi possível atualizar o catálogo. Exibindo os produtos de exemplo; tente recarregar a página.';
+    productLoadStatus.hidden=false;
+  }
+}
 function addPublicFeedback(item){const card=document.createElement('article');card.className='feedback-card';const stars=document.createElement('div');stars.className='stars';const rating=Math.max(1,Math.min(5,Number(item.rating)||5));stars.textContent='★'.repeat(rating)+'☆'.repeat(5-rating);const message=document.createElement('p');message.textContent=`“${item.message}”`;const author=document.createElement('strong');author.textContent=item.customer_name;card.append(stars,message,author);document.querySelector('#feedbackList').prepend(card)}
-async function loadPublicFeedback(){try{const response=await fetch('/api/feedback',{cache:'no-store'});if(!response.ok)return;const result=await response.json();(result.feedbacks||[]).forEach(addPublicFeedback)}catch{}}
+const feedbackList=document.querySelector('#feedbackList');
+const feedbackLoadStatus=document.createElement('p');
+feedbackLoadStatus.className='search-empty';
+feedbackLoadStatus.setAttribute('role','status');
+feedbackLoadStatus.setAttribute('aria-live','polite');
+feedbackLoadStatus.hidden=true;
+feedbackList.before(feedbackLoadStatus);
+async function loadPublicFeedback(){
+  try{
+    const response=await fetch('/api/feedback',{cache:'no-store'});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const result=await response.json();
+    if(!Array.isArray(result.feedbacks)||result.feedbacks.some(item=>!item||typeof item.customer_name!=='string'||typeof item.message!=='string')){
+      throw new Error('Formato de feedback inválido.');
+    }
+    result.feedbacks.forEach(addPublicFeedback);
+    feedbackLoadStatus.hidden=true;
+  }catch{
+    feedbackLoadStatus.textContent='Não foi possível carregar os feedbacks. Tente recarregar a página.';
+    feedbackLoadStatus.hidden=false;
+  }
+}
 function openCart(){document.querySelector('#cartDrawer').classList.add('open');document.querySelector('#cartDrawer').setAttribute('aria-hidden','false');document.querySelector('#overlay').classList.add('visible')}
 function closeCart(){document.querySelector('#cartDrawer').classList.remove('open');document.querySelector('#cartDrawer').setAttribute('aria-hidden','true');document.querySelector('#overlay').classList.remove('visible')}
 function showToast(message){const toast=document.querySelector('#toast');toast.textContent=message;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200)}
